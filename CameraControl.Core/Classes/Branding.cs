@@ -1,4 +1,4 @@
-﻿#region Licence
+#region Licence
 
 // Distributed under MIT License
 // ===========================================================
@@ -194,7 +194,7 @@ namespace CameraControl.Core.Classes
 
         public Branding()
         {
-            ApplicationTitle = "digiCamControl";
+            ApplicationTitle = "digiCamControl (Fork - Canon EOS Bracketing Fix)";
             ApplicationDataFolder = String.Empty;
             ResetSettingsOnLoad = false;
             ShowAboutWindow = true;

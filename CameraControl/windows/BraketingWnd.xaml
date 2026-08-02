@@ -1,4 +1,4 @@
-﻿<Window x:Class="CameraControl.windows.BraketingWnd"
+<Window x:Class="CameraControl.windows.BraketingWnd"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="{T:TranslateExtension BraketingWindowTitle}" Height="300" Width="550"  WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
@@ -36,6 +36,7 @@
                   materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingMode}"
                   Style="{StaticResource MaterialDesignFloatingHintComboBox}">
             <ComboBoxItem Content="{T:TranslateExtension LabelExposureBracketing}"/>
+            <ComboBoxItem Content="{T:TranslateExtension LabelManualExposureBracketing}"/>
             <ComboBoxItem Content="{T:TranslateExtension LabelDepthOfFieldBracketing}"/>
             <ComboBoxItem Content="{T:TranslateExtension LabelIsoBracketing}"/>            
             <ComboBoxItem Content="{T:TranslateExtension LabelWhiteBalanceBracketing}"/>
@@ -56,6 +57,26 @@
                                         materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingNumberOfShots}"
                                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                 <ComboBox Grid.Column="2" Margin="3" ItemsSource="{Binding ExpHighList}" SelectedValue="{Binding ExpHigh}"
+                          materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingHigh}"
+                          Style="{StaticResource MaterialDesignFloatingHintComboBox}"/>
+            </Grid>
+        </materialDesign:Card>
+
+        <materialDesign:Card Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsEnabled="{Binding IsFree}" Visibility="{Binding ShutterVisibility}" Margin="24,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Row="1" Grid.Column="0" Margin="3" ItemsSource="{Binding ShutterLowList}" SelectedItem="{Binding ShutterLow}"
+                          materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingLow}"
+                          Style="{StaticResource MaterialDesignFloatingHintComboBox}"/>
+
+                <TextBox  Grid.Column="1" Margin="3" Text="{Binding ShutterCaptureCount}"
+                                        materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingNumberOfShots}"
+                                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+                <ComboBox Grid.Column="2" Margin="3" ItemsSource="{Binding ShutterHighList}" SelectedValue="{Binding ShutterHigh}"
                           materialDesign:HintAssist.Hint="{T:TranslateExtension LabelBracketingHigh}"
                           Style="{StaticResource MaterialDesignFloatingHintComboBox}"/>
             </Grid>

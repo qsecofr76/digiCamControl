@@ -1,4 +1,4 @@
-﻿#region Licence
+#region Licence
 
 // Distributed under MIT License
 // ===========================================================
@@ -46,7 +46,7 @@ namespace CameraControl.windows
         public AboutWnd()
         {
             InitializeComponent();
-            Title = "About " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            Title = "About digiCamControl (Fork Canon EOS Bracketing Fix) " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             var file = Path.Combine(Settings.ApplicationFolder, "about.txt");
             if (File.Exists(file))
             {

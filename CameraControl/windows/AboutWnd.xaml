@@ -1,4 +1,4 @@
-﻿<Window x:Class="CameraControl.windows.AboutWnd"
+<Window x:Class="CameraControl.windows.AboutWnd"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
@@ -26,7 +26,15 @@
         </Grid.RowDefinitions>
         <Button Content="Close" Grid.Row="2"  Name="button2" VerticalAlignment="Top" Click="button2_Click" Margin="16" />
         <TextBlock Name="textBlock1" Margin="16" TextWrapping="Wrap" TextTrimming="WordEllipsis" TextAlignment="Justify"/>
-        <TextBlock Name="textBlock2" Margin="16" TextWrapping="Wrap" TextTrimming="WordEllipsis" TextAlignment="Justify">digiCamControl - Copyright (c) 2018 Duka István<LineBreak/>
+        <TextBlock Name="textBlock2" Margin="16" TextWrapping="Wrap" TextTrimming="WordEllipsis" TextAlignment="Justify">digiCamControl (Fork - Canon EOS Exposure Bracketing Fix)<LineBreak/>
+Repository: https://github.com/qsecofr76/digiCamControl<LineBreak/>
+Original Project Copyright (c) Duka István (dukus/digicamcontrol)<LineBreak/>
+<LineBreak/>
+This custom build contains dedicated fixes for Canon EOS exposure bracketing (specifically tested &amp; verified for Canon EOS M50 and related EOS cameras):<LineBreak/>
+- Added Manual Exposure Bracketing (Shutter Speed) mode for Canon cameras in M mode.<LineBreak/>
+- Fixed EDSDK property timing &amp; retry loops during SD card write operations.<LineBreak/>
+- Fixed hardware event synchronization to eliminate exposure step lag.<LineBreak/>
+- Corrected Canon 1/3 EV step translation tables.<LineBreak/>
 <LineBreak/>
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the 'Software'), to deal

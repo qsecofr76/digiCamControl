@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -77,6 +78,9 @@ namespace CameraControl.ViewModel
         }
 
 
+        private ObservableCollection<string> _shutterLowList;
+        private ObservableCollection<string> _shutterHighList;
+
         public int Mode
         {
             get { return BracketingSettings.Mode; }
@@ -85,8 +89,10 @@ namespace CameraControl.ViewModel
                 BracketingSettings.Mode = value;
                 RaisePropertyChanged(() => Mode);
                 RaisePropertyChanged(() => ExpVisibility);
+                RaisePropertyChanged(() => ShutterVisibility);
                 RaisePropertyChanged(() => FVisibility);
                 RaisePropertyChanged(() => IsoVisibility);
+                SetMessage();
             }
         }
 
@@ -95,13 +101,25 @@ namespace CameraControl.ViewModel
             get { return Mode == 0 ? Visibility.Visible : Visibility.Hidden; }
         }
 
+        public Visibility ShutterVisibility
+        {
+            get { return Mode == 1 ? Visibility.Visible : Visibility.Hidden; }
+        }
 
+        public Visibility FVisibility
+        {
+            get { return Mode == 2 ? Visibility.Visible : Visibility.Hidden; }
+        }
+
+        public Visibility IsoVisibility
+        {
+            get { return Mode == 3 ? Visibility.Visible : Visibility.Hidden; }
+        }
+
+        #region Exp (Mode 0)
         public ObservableCollection<string> ExpLowList
         {
-            get
-            {
-                return Camera.ExposureCompensation.Values;
-            }
+            get { return Camera.ExposureCompensation.Values; }
             set { _expLowList = value; }
         }
 
@@ -127,17 +145,6 @@ namespace CameraControl.ViewModel
             {
                 BracketingSettings.ExpLow = value;
                 RaisePropertyChanged(() => ExpLow);
-                try
-                {
-                    var i = Camera.ExposureCompensation.Values.IndexOf(ExpLow) + 1;
-                    if (i < Camera.ExposureCompensation.Values.Count)
-                        ExpHighList = new ObservableCollection<string>(Camera.ExposureCompensation.Values.ToList()
-                            .GetRange(i, Camera.ExposureCompensation.Values.Count - i));
-                }
-                catch (Exception)
-                {
-
-                }
                 SetMessage();
             }
         }
@@ -163,13 +170,65 @@ namespace CameraControl.ViewModel
                 SetMessage();
             }
         }
-        #region f
-        public Visibility FVisibility
+        #endregion
+
+        #region Shutter (Mode 1 - Manual Exposure Bracketing)
+        public ObservableCollection<string> ShutterLowList
         {
-            get { return Mode == 1 ? Visibility.Visible : Visibility.Hidden; }
+            get { return Camera.ShutterSpeed.Values; }
+            set { _shutterLowList = value; }
         }
 
+        public ObservableCollection<string> ShutterHighList
+        {
+            get
+            {
+                if (_shutterHighList == null)
+                    return Camera.ShutterSpeed.Values;
+                return _shutterHighList;
+            }
+            set
+            {
+                _shutterHighList = value;
+                RaisePropertyChanged(() => ShutterHighList);
+            }
+        }
 
+        public string ShutterLow
+        {
+            get { return BracketingSettings.ExpLow; }
+            set
+            {
+                BracketingSettings.ExpLow = value;
+                RaisePropertyChanged(() => ShutterLow);
+                SetMessage();
+            }
+        }
+
+        public string ShutterHigh
+        {
+            get { return BracketingSettings.ExpHigh; }
+            set
+            {
+                BracketingSettings.ExpHigh = value;
+                RaisePropertyChanged(() => ShutterHigh);
+                SetMessage();
+            }
+        }
+
+        public int ShutterCaptureCount
+        {
+            get { return BracketingSettings.ExpCaptureCount; }
+            set
+            {
+                BracketingSettings.ExpCaptureCount = value;
+                RaisePropertyChanged(() => ShutterCaptureCount);
+                SetMessage();
+            }
+        }
+        #endregion
+
+        #region F (Mode 2)
         public ObservableCollection<string> FLowList
         {
             get { return _fLowList ?? (_fLowList = Camera.FNumber.Values); }
@@ -198,17 +257,6 @@ namespace CameraControl.ViewModel
             {
                 BracketingSettings.FLow = value;
                 RaisePropertyChanged(() => FLow);
-                try
-                {
-                    var i = Camera.FNumber.Values.IndexOf(FLow) + 1;
-                    if (i < Camera.FNumber.Values.Count)
-                        FHighList = new ObservableCollection<string>(Camera.FNumber.Values.ToList()
-                            .GetRange(i, Camera.FNumber.Values.Count - i));
-                }
-                catch (Exception)
-                {
-
-                }
                 SetMessage();
             }
         }
@@ -234,21 +282,12 @@ namespace CameraControl.ViewModel
                 SetMessage();
             }
         }
-
         #endregion
-#region iso
-        public Visibility IsoVisibility
-        {
-            get { return Mode == 2 ? Visibility.Visible : Visibility.Hidden; }
-        }
 
-
+        #region ISO (Mode 3)
         public ObservableCollection<string> IsoLowList
         {
-            get
-            {
-                return Camera.IsoNumber.Values;
-            }
+            get { return Camera.IsoNumber.Values; }
             set { _isoLowList = value; }
         }
 
@@ -274,17 +313,6 @@ namespace CameraControl.ViewModel
             {
                 BracketingSettings.IsoLow = value;
                 RaisePropertyChanged(() => IsoLow);
-                try
-                {
-                    var i = Camera.IsoNumber.Values.IndexOf(IsoLow) + 1;
-                    if (i < Camera.IsoNumber.Values.Count)
-                        IsoHighList = new ObservableCollection<string>(Camera.IsoNumber.Values.ToList()
-                            .GetRange(i, Camera.IsoNumber.Values.Count - i));
-                }
-                catch (Exception)
-                {
-
-                }
                 SetMessage();
             }
         }
@@ -310,7 +338,8 @@ namespace CameraControl.ViewModel
                 SetMessage();
             }
         }
-#endregion
+        #endregion
+
         public bool IsBusy
         {
             get { return _isBusy; }
@@ -346,57 +375,147 @@ namespace CameraControl.ViewModel
             _timer.Elapsed += _timer_Elapsed;
             if (!IsInDesignMode)
                 SetMessage();
-            if (IsInDesignMode)
-                Mode = 1;
             StartCommand = new RelayCommand(Start);
             StopCommand = new RelayCommand(Stop);
         }
 
+        private void WriteToLog(string text)
+        {
+            try
+            {
+                string logLine = $"[{DateTime.Now:HH:mm:ss.fff}] {text}";
+                Log.Debug(logLine);
+                string file1 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Bracketing_Log.txt");
+                File.AppendAllText(file1, logLine + Environment.NewLine);
+                string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string file2 = Path.Combine(docs, "DigiCamControl_Bracketing_Log.txt");
+                File.AppendAllText(file2, logLine + Environment.NewLine);
+            }
+            catch { }
+        }
+
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (Camera.IsBusy)
+            if (Camera == null)
                 return;
+
             try
             {
                 _timer.Stop();
-                Thread.Sleep(100);
+
+                int waitCount = 0;
+                while (Camera.IsBusy && waitCount < 60)
+                {
+                    Thread.Sleep(50);
+                    waitCount++;
+                }
+
+                Thread.Sleep(200);
+
+                string targetVal = Values[Counter];
+                string actualValBefore = "";
+                string actualValAfter = "";
+                string actualValBeforeCapture = "";
+
+                bool setSuccess = false;
+                for (int attempt = 0; attempt < 3; attempt++)
+                {
+                    switch (Mode)
+                    {
+                        case 0:
+                            Camera.ExposureCompensation.Value = targetVal;
+                            CurValue = targetVal;
+                            actualValBefore = Camera.ExposureCompensation.Value;
+                            waitCount = 0;
+                            while (Camera.ExposureCompensation.Value != targetVal && waitCount < 40)
+                            {
+                                Thread.Sleep(100);
+                                waitCount++;
+                            }
+                            actualValAfter = Camera.ExposureCompensation.Value;
+                            if (actualValAfter == targetVal) setSuccess = true;
+                            break;
+                        case 1:
+                            Camera.ShutterSpeed.Value = targetVal;
+                            CurValue = targetVal;
+                            actualValBefore = Camera.ShutterSpeed.Value;
+                            waitCount = 0;
+                            while (Camera.ShutterSpeed.Value != targetVal && waitCount < 40)
+                            {
+                                Thread.Sleep(100);
+                                waitCount++;
+                            }
+                            actualValAfter = Camera.ShutterSpeed.Value;
+                            if (actualValAfter == targetVal) setSuccess = true;
+                            break;
+                        case 2:
+                            Camera.FNumber.Value = targetVal;
+                            CurValue = targetVal;
+                            actualValBefore = Camera.FNumber.Value;
+                            waitCount = 0;
+                            while (Camera.FNumber.Value != targetVal && waitCount < 40)
+                            {
+                                Thread.Sleep(100);
+                                waitCount++;
+                            }
+                            actualValAfter = Camera.FNumber.Value;
+                            if (actualValAfter == targetVal) setSuccess = true;
+                            break;
+                        case 3:
+                            Camera.IsoNumber.Value = targetVal;
+                            CurValue = targetVal;
+                            actualValBefore = Camera.IsoNumber.Value;
+                            waitCount = 0;
+                            while (Camera.IsoNumber.Value != targetVal && waitCount < 40)
+                            {
+                                Thread.Sleep(100);
+                                waitCount++;
+                            }
+                            actualValAfter = Camera.IsoNumber.Value;
+                            if (actualValAfter == targetVal) setSuccess = true;
+                            break;
+                    }
+                    if (setSuccess) break;
+                    Thread.Sleep(300);
+                }
+
+                Thread.Sleep(300);
+
+                waitCount = 0;
+                while (Camera.IsBusy && waitCount < 40)
+                {
+                    Thread.Sleep(50);
+                    waitCount++;
+                }
+
                 switch (Mode)
                 {
-                    case 0:
-                        {
-                            Camera.ExposureCompensation.Value = Values[Counter];
-                            CurValue = Values[Counter];
-                        }
-                        break;
-                    case 1:
-                        {
-                            Camera.FNumber.Value = Values[Counter];
-                            CurValue = Values[Counter];
-                        }
-                        break;
-                    case 2:
-                        {
-                            Camera.IsoNumber.Value = Values[Counter];
-                            CurValue = Values[Counter];
-                        }
-                        break;
+                    case 0: actualValBeforeCapture = Camera.ExposureCompensation.Value; break;
+                    case 1: actualValBeforeCapture = Camera.ShutterSpeed.Value; break;
+                    case 2: actualValBeforeCapture = Camera.FNumber.Value; break;
+                    case 3: actualValBeforeCapture = Camera.IsoNumber.Value; break;
                 }
-                Thread.Sleep(200);
+
+                WriteToLog($"[Scatto {Counter + 1}/{Values.Count}] Valore Atteso: '{targetVal}' | Canon subito dopo Set: '{actualValBefore}' | Canon dopo attesa hardware: '{actualValAfter}' | Canon prima dello scatto: '{actualValBeforeCapture}'");
+
                 CameraHelper.Capture(Camera);
                 Counter++;
+
                 if (Counter >= Values.Count)
                 {
                     Stop();
                     return;
                 }
+
+                Thread.Sleep(500);
                 _timer.Start();
             }
             catch (Exception ex)
             {
                 StaticHelper.Instance.SystemMessage = ex.Message;
+                WriteToLog($"[ERRORE timer_Elapsed] {ex.Message}");
                 Stop();
             }
-
         }
 
         public void Start()
@@ -408,9 +527,22 @@ namespace CameraControl.ViewModel
                 switch (Mode)
                 {
                     case 0:
+                        if (Camera.Mode.Value == "M")
+                        {
+                            Error = "In M mode, use Manual Exposure Bracketing (Shutter Speed) for Canon cameras.";
+                            return;
+                        }
                         DefValue = Camera.ExposureCompensation.Value;
                         break;
                     case 1:
+                        if (!Camera.ShutterSpeed.IsEnabled)
+                        {
+                            Error = TranslationStrings.LabelWrongValue;
+                            return;
+                        }
+                        DefValue = Camera.ShutterSpeed.Value;
+                        break;
+                    case 2:
                         if (!Camera.FNumber.IsEnabled)
                         {
                             Error = TranslationStrings.LabelWrongFNumber;
@@ -418,7 +550,7 @@ namespace CameraControl.ViewModel
                         }
                         DefValue = Camera.FNumber.Value;
                         break;
-                    case 2:
+                    case 3:
                         if (Camera.Mode.Value != "M")
                         {
                             Error = TranslationStrings.LabelBracketingMMode;
@@ -428,11 +560,15 @@ namespace CameraControl.ViewModel
                 }
                 Counter = 0;
                 IsBusy = true;
+                WriteToLog($"\n=================== AVVIO BRACKETING ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) ===================");
+                WriteToLog($"Modalità: {Mode} | Valore iniziale fotocamera: '{DefValue}'");
+                WriteToLog($"Sequenza attesa ({Values?.Count ?? 0} scatti): {string.Join(", ", Values ?? new List<string>())}");
                 _timer.Start();
             }
             catch (Exception ex)
             {
                 Error = ex.Message;
+                WriteToLog($"[ERRORE Start] {ex.Message}");
                 Log.Error("Unable to start bracketing ", ex);
             }
         }
@@ -441,19 +577,37 @@ namespace CameraControl.ViewModel
         {
             _timer.Stop();
             CurValue = "";
-            Thread.Sleep(200);
-            switch (Mode)
+            int waitCount = 0;
+            while (Camera != null && Camera.IsBusy && waitCount < 40)
             {
-                case 0:
-                    Camera.ExposureCompensation.Value = DefValue;
-                    break;
-                case 1:
-                    Camera.FNumber.Value = DefValue;
-                    break;
-                case 2:
-                    Camera.IsoNumber.Value = DefValue;
-                    break;
+                Thread.Sleep(100);
+                waitCount++;
             }
+            Thread.Sleep(1000);
+            try
+            {
+                switch (Mode)
+                {
+                    case 0:
+                        Camera.ExposureCompensation.Value = DefValue;
+                        break;
+                    case 1:
+                        Camera.ShutterSpeed.Value = DefValue;
+                        break;
+                    case 2:
+                        Camera.FNumber.Value = DefValue;
+                        break;
+                    case 3:
+                        Camera.IsoNumber.Value = DefValue;
+                        break;
+                }
+                WriteToLog($"[Ripristinato valore iniziale]: '{DefValue}'");
+            }
+            catch (Exception ex)
+            {
+                WriteToLog($"[ERRORE Ripristino DefValue]: {ex.Message}");
+            }
+            WriteToLog($"=================== FINE BRACKETING ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) ===================\n");
             IsBusy = false;
         }
 
@@ -465,7 +619,7 @@ namespace CameraControl.ViewModel
             {
                 case 0:
                     {
-                        var vals = GetValues(ExpLowList.ToList(), ExpLow, ExpHigh, ExpCaptureCount);
+                        var vals = GetValues(ExpLowList != null ? ExpLowList.ToList() : null, ExpLow, ExpHigh, ExpCaptureCount);
                         if (vals == null || vals.Count == 0)
                             return;
                         Values = vals;
@@ -477,7 +631,7 @@ namespace CameraControl.ViewModel
                     break;
                 case 1:
                     {
-                        var vals = GetValues(FLowList.ToList(), FLow, FHigh, FCaptureCount);
+                        var vals = GetValues(ShutterLowList != null ? ShutterLowList.ToList() : null, ShutterLow, ShutterHigh, ShutterCaptureCount);
                         if (vals == null || vals.Count == 0)
                             return;
                         Values = vals;
@@ -489,7 +643,19 @@ namespace CameraControl.ViewModel
                     break;
                 case 2:
                     {
-                        var vals = GetValues(IsoLowList.ToList(), IsoLow, IsoHigh, IsoCaptureCount);
+                        var vals = GetValues(FLowList != null ? FLowList.ToList() : null, FLow, FHigh, FCaptureCount);
+                        if (vals == null || vals.Count == 0)
+                            return;
+                        Values = vals;
+                        foreach (var val in vals)
+                        {
+                            Message += (val + ", ");
+                        }
+                    }
+                    break;
+                case 3:
+                    {
+                        var vals = GetValues(IsoLowList != null ? IsoLowList.ToList() : null, IsoLow, IsoHigh, IsoCaptureCount);
                         if (vals == null || vals.Count == 0)
                             return;
                         Values = vals;
@@ -505,6 +671,11 @@ namespace CameraControl.ViewModel
         public List<string> GetValues(IList<string> vals, string low, string high, int count)
         {
             var res = new List<string>();
+            if (vals == null || vals.Count == 0)
+            {
+                Error = TranslationStrings.LabelWrongValue;
+                return null;
+            }
             if (string.IsNullOrEmpty(low))
             {
                 Error = TranslationStrings.LabelNoLowValueError;
@@ -517,22 +688,33 @@ namespace CameraControl.ViewModel
             }
             var il = vals.IndexOf(low);
             var ih = vals.IndexOf(high);
-            if (il < 0 || ih < 0 || ih <= il || count < 2)
+            if (il < 0 || ih < 0 || count < 2)
             {
                 Error = TranslationStrings.LabelWrongValue;
                 return null;
             }
-            count = Math.Min(count, ih - il);
-            count = Math.Max(count, 2);
-            var step = (ih - il) / (count - 1);
-            if (step == 0)
-                step = 1;
-
-            for (int i = il; i < ih; i += step)
+            if (il == ih)
             {
-                res.Add(vals[i]);
+                res.Add(vals[il]);
+                return res;
             }
-            res.Add(vals[ih]);
+
+            int availableSteps = Math.Abs(ih - il) + 1;
+            count = Math.Min(count, availableSteps);
+            count = Math.Max(count, 2);
+
+            for (int j = 0; j < count; j++)
+            {
+                double ratio = (double)j / (count - 1);
+                int index = (int)Math.Round(il + ratio * (ih - il));
+                if (index < 0) index = 0;
+                if (index >= vals.Count) index = vals.Count - 1;
+                string val = vals[index];
+                if (!res.Contains(val))
+                {
+                    res.Add(val);
+                }
+            }
             return res;
         }
 

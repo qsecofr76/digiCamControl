@@ -1,9 +1,9 @@
-﻿<Window x:Class="CameraControl.windows.Welcome"
+<Window x:Class="CameraControl.windows.Welcome"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="digiCamControl by Duka Istvan" Height="380" Width="460" WindowStartupLocation="CenterScreen" ShowInTaskbar="False" Topmost="True" WindowStyle="SingleBorderWindow" ResizeMode="NoResize" 
+        Title="digiCamControl (Fork - Canon EOS Exposure Bracketing Fix)" Height="380" Width="460" WindowStartupLocation="CenterScreen" ShowInTaskbar="False" Topmost="True" WindowStyle="SingleBorderWindow" ResizeMode="NoResize" 
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -75,9 +75,10 @@
                 </Grid.ColumnDefinitions>
                 <materialDesign:PackIcon Kind="Git" Width="160" Height="160" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <StackPanel Grid.Row="0" Grid.Column="1">
-                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="16 16 16 8">Open Source</TextBlock>
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="16 16 16 4">Open Source Fork</TextBlock>
+                    <TextBlock TextWrapping="Wrap" Margin="16 0 16 4" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}">Canon EOS Bracketing Fix Edition</TextBlock>
                     <TextBlock TextWrapping="Wrap" Margin="16 0 16 8" Foreground="{DynamicResource MaterialDesignBodyLight}"
-                               VerticalAlignment="Top">This project is completely open source. If you like it and want to say thanks you could, tweet or post about it, or tell your friends about it!</TextBlock>
+                               VerticalAlignment="Top">Custom build containing critical exposure bracketing fixes for Canon EOS cameras (tested on Canon EOS M50). Repository: qsecofr76/digiCamControl</TextBlock>
                 </StackPanel>
                 <Border Grid.Row="1" Grid.ColumnSpan="2" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" Padding="8">
                     <DockPanel>

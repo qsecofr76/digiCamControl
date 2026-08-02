@@ -61,12 +61,12 @@ namespace CameraControl.Devices.Canon
                                                                    {0x0C, "Bulb"},
                                                                    {0x10, "30"},
                                                                    {0x13, "25"},
-                                                                   {0x14, "20"},
                                                                    {0x15, "20"},
+                                                                   {0x14, "20"},
                                                                    {0x18, "15"},
                                                                    {0x1B, "13"},
-                                                                   {0x1C, "10"},
                                                                    {0x1D, "10"},
+                                                                   {0x1C, "10"},
                                                                    {0x20, "8"},
                                                                    {0x23, "6"},
                                                                    {0x24, "6"},
@@ -85,8 +85,8 @@ namespace CameraControl.Devices.Canon
                                                                    {0x3D, "0.6"},
                                                                    {0x40, "0.5"},
                                                                    {0x43, "0.4"},
-                                                                   {0x44, "0.3"},
                                                                    {0x45, "0.3"},
+                                                                   {0x44, "0.3"},
                                                                    {0x48, "1/4"},
                                                                    {0x4B, "1/5"},
                                                                    {0x4C, "1/6"},
@@ -142,16 +142,16 @@ namespace CameraControl.Devices.Canon
                                                                    {0x0D, "1.0"},
                                                                    {0x10, "1.4"},
                                                                    {0x13, "1.6"},
-                                                                   {0x14, "1.8"},
                                                                    {0x15, "1.8"},
+                                                                   {0x14, "1.8"},
                                                                    {0x18, "2.0"},
                                                                    {0x1B, "2.2"},
-                                                                   {0x1C, "2.5"},
                                                                    {0x1D, "2.5"},
+                                                                   {0x1C, "2.5"},
                                                                    {0x20, "2.8"},
                                                                    {0x23, "3.2"},
-                                                                   {0x24, "3.5"},
                                                                    {0x25, "3.5"},
+                                                                   {0x24, "3.5"},
                                                                    {0x28, "4.0"},
                                                                    {0x2B, "4.5"},
                                                                    {0x2C, "4.5"},
@@ -266,7 +266,7 @@ namespace CameraControl.Devices.Canon
                                                          {0xF0, "-2"},
                                                          {0xED, "-2 1/3"},
                                                          {0xEC, "-2.5"},
-                                                         {0xEB, "-3 2/3"},
+                                                         {0xEB, "-2 2/3"},
                                                          {0xE8, "-3"},
                                                      };
 
@@ -676,8 +676,6 @@ namespace CameraControl.Devices.Canon
 
         private void Camera_PropertyChanged(object sender, EosPropertyEventArgs e)
         {
-            if (IsBusy)
-                return;
             lock (Locker)
             {
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -389,25 +389,23 @@ namespace Canon.Eos.Framework
         {
             lock (_locker)
             {
-                SendCommand(Edsdk.CameraCommand_DoEvfAf, 0);
-                bool retry = false;
+                bool retry;
                 int retrynum = 0;
-                //DeviceReady();
                 do
                 {
-                    if (retrynum > 10)
-                    {
-                        return;
-                    }
+                    retry = false;
                     try
                     {
                         this.SetPropertyIntegerData(propertyId, val);
                     }
                     catch (EosPropertyException)
                     {
-                        Thread.Sleep(50);
-                        retry = true;
-                        retrynum++;
+                        if (retrynum < 100)
+                        {
+                            Thread.Sleep(50);
+                            retry = true;
+                            retrynum++;
+                        }
                     }
                 } while (retry);
             }
