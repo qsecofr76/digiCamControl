@@ -379,21 +379,6 @@ namespace CameraControl.ViewModel
             StopCommand = new RelayCommand(Stop);
         }
 
-        private void WriteToLog(string text)
-        {
-            try
-            {
-                string logLine = $"[{DateTime.Now:HH:mm:ss.fff}] {text}";
-                Log.Debug(logLine);
-                string file1 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Bracketing_Log.txt");
-                File.AppendAllText(file1, logLine + Environment.NewLine);
-                string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string file2 = Path.Combine(docs, "DigiCamControl_Bracketing_Log.txt");
-                File.AppendAllText(file2, logLine + Environment.NewLine);
-            }
-            catch { }
-        }
-
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (Camera == null)
@@ -413,9 +398,6 @@ namespace CameraControl.ViewModel
                 Thread.Sleep(200);
 
                 string targetVal = Values[Counter];
-                string actualValBefore = "";
-                string actualValAfter = "";
-                string actualValBeforeCapture = "";
 
                 bool setSuccess = false;
                 for (int attempt = 0; attempt < 3; attempt++)
@@ -425,54 +407,46 @@ namespace CameraControl.ViewModel
                         case 0:
                             Camera.ExposureCompensation.Value = targetVal;
                             CurValue = targetVal;
-                            actualValBefore = Camera.ExposureCompensation.Value;
                             waitCount = 0;
                             while (Camera.ExposureCompensation.Value != targetVal && waitCount < 40)
                             {
                                 Thread.Sleep(100);
                                 waitCount++;
                             }
-                            actualValAfter = Camera.ExposureCompensation.Value;
-                            if (actualValAfter == targetVal) setSuccess = true;
+                            if (Camera.ExposureCompensation.Value == targetVal) setSuccess = true;
                             break;
                         case 1:
                             Camera.ShutterSpeed.Value = targetVal;
                             CurValue = targetVal;
-                            actualValBefore = Camera.ShutterSpeed.Value;
                             waitCount = 0;
                             while (Camera.ShutterSpeed.Value != targetVal && waitCount < 40)
                             {
                                 Thread.Sleep(100);
                                 waitCount++;
                             }
-                            actualValAfter = Camera.ShutterSpeed.Value;
-                            if (actualValAfter == targetVal) setSuccess = true;
+                            if (Camera.ShutterSpeed.Value == targetVal) setSuccess = true;
                             break;
                         case 2:
                             Camera.FNumber.Value = targetVal;
                             CurValue = targetVal;
-                            actualValBefore = Camera.FNumber.Value;
                             waitCount = 0;
                             while (Camera.FNumber.Value != targetVal && waitCount < 40)
                             {
                                 Thread.Sleep(100);
                                 waitCount++;
                             }
-                            actualValAfter = Camera.FNumber.Value;
-                            if (actualValAfter == targetVal) setSuccess = true;
+                            if (Camera.FNumber.Value == targetVal) setSuccess = true;
                             break;
                         case 3:
                             Camera.IsoNumber.Value = targetVal;
                             CurValue = targetVal;
-                            actualValBefore = Camera.IsoNumber.Value;
                             waitCount = 0;
                             while (Camera.IsoNumber.Value != targetVal && waitCount < 40)
                             {
                                 Thread.Sleep(100);
                                 waitCount++;
                             }
-                            actualValAfter = Camera.IsoNumber.Value;
-                            if (actualValAfter == targetVal) setSuccess = true;
+                            if (Camera.IsoNumber.Value == targetVal) setSuccess = true;
                             break;
                     }
                     if (setSuccess) break;
@@ -487,16 +461,6 @@ namespace CameraControl.ViewModel
                     Thread.Sleep(50);
                     waitCount++;
                 }
-
-                switch (Mode)
-                {
-                    case 0: actualValBeforeCapture = Camera.ExposureCompensation.Value; break;
-                    case 1: actualValBeforeCapture = Camera.ShutterSpeed.Value; break;
-                    case 2: actualValBeforeCapture = Camera.FNumber.Value; break;
-                    case 3: actualValBeforeCapture = Camera.IsoNumber.Value; break;
-                }
-
-                WriteToLog($"[Scatto {Counter + 1}/{Values.Count}] Valore Atteso: '{targetVal}' | Canon subito dopo Set: '{actualValBefore}' | Canon dopo attesa hardware: '{actualValAfter}' | Canon prima dello scatto: '{actualValBeforeCapture}'");
 
                 CameraHelper.Capture(Camera);
                 Counter++;
@@ -513,7 +477,6 @@ namespace CameraControl.ViewModel
             catch (Exception ex)
             {
                 StaticHelper.Instance.SystemMessage = ex.Message;
-                WriteToLog($"[ERRORE timer_Elapsed] {ex.Message}");
                 Stop();
             }
         }
@@ -560,15 +523,11 @@ namespace CameraControl.ViewModel
                 }
                 Counter = 0;
                 IsBusy = true;
-                WriteToLog($"\n=================== AVVIO BRACKETING ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) ===================");
-                WriteToLog($"Modalità: {Mode} | Valore iniziale fotocamera: '{DefValue}'");
-                WriteToLog($"Sequenza attesa ({Values?.Count ?? 0} scatti): {string.Join(", ", Values ?? new List<string>())}");
                 _timer.Start();
             }
             catch (Exception ex)
             {
                 Error = ex.Message;
-                WriteToLog($"[ERRORE Start] {ex.Message}");
                 Log.Error("Unable to start bracketing ", ex);
             }
         }
@@ -601,13 +560,10 @@ namespace CameraControl.ViewModel
                         Camera.IsoNumber.Value = DefValue;
                         break;
                 }
-                WriteToLog($"[Ripristinato valore iniziale]: '{DefValue}'");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                WriteToLog($"[ERRORE Ripristino DefValue]: {ex.Message}");
             }
-            WriteToLog($"=================== FINE BRACKETING ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) ===================\n");
             IsBusy = false;
         }
 
